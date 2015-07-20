@@ -18,7 +18,7 @@ class WrapperNotApplicable(ValueError):
         self.data = kwargs.pop('data', None)
         self.renderer_context = kwargs.pop('renderer_context', None)
 
-        return super(WrapperNotApplicable, self).__init__(*args, **kwargs)
+        super(WrapperNotApplicable, self).__init__(*args, **kwargs)
 
 
 class JsonApiMixin(object):
