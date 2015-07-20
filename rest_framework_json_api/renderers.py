@@ -1,13 +1,14 @@
 from rest_framework import relations, renderers, serializers, status
 from rest_framework.settings import api_settings
+from django.core import urlresolvers
+from django.core.exceptions import NON_FIELD_ERRORS
+from django.utils import encoding, six
+
 from rest_framework_json_api import encoders
 from rest_framework_json_api.utils import (
     get_related_field, is_related_many,
     model_from_obj, model_to_resource_type
 )
-from django.core import urlresolvers
-from django.core.exceptions import NON_FIELD_ERRORS
-from django.utils import encoding, six
 from django.utils.six.moves.urllib.parse import urlparse, urlunparse
 
 
@@ -17,7 +18,7 @@ class WrapperNotApplicable(ValueError):
         self.data = kwargs.pop('data', None)
         self.renderer_context = kwargs.pop('renderer_context', None)
 
-        return super(WrapperNotApplicable, self).__init__(*args, **kwargs)
+        super(WrapperNotApplicable, self).__init__(*args, **kwargs)
 
 
 class JsonApiMixin(object):
