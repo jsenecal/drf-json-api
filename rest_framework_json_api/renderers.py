@@ -1,18 +1,19 @@
 from rest_framework import relations, renderers, serializers, status
 from rest_framework.settings import api_settings
+from django.core import urlresolvers
+
+from django.core.exceptions import NON_FIELD_ERRORS
+from django.utils import encoding, six
+
 from rest_framework_json_api import encoders
 from rest_framework_json_api.utils import (
     get_related_field, is_related_many,
     model_from_obj, model_to_resource_type
 )
-from django.core import urlresolvers
-from django.core.exceptions import NON_FIELD_ERRORS
-from django.utils import encoding, six
 from django.utils.six.moves.urllib.parse import urlparse, urlunparse
 
 
 class WrapperNotApplicable(ValueError):
-
     def __init__(self, *args, **kwargs):
         self.data = kwargs.pop('data', None)
         self.renderer_context = kwargs.pop('renderer_context', None)
@@ -269,15 +270,18 @@ class JsonApiMixin(object):
         model = self.model_from_obj(view)
         resource_type = self.model_to_resource_type(model)
 
+        # DRF 3.x data['results'] is instance of ReturnList already
         try:
             from rest_framework.utils.serializer_helpers import ReturnList
-
-            results = ReturnList(
-                data["results"],
-                serializer=data.serializer.fields["results"],
-            )
         except ImportError:
             results = data["results"]
+        else:
+            results = (
+                data['results'] if isinstance(data['results'], ReturnList) else ReturnList(
+                    data["results"],
+                    serializer=data.serializer.fields["results"]
+                )
+            )
 
         # Use default wrapper for results
         wrapper = self.wrap_default(results, renderer_context)
