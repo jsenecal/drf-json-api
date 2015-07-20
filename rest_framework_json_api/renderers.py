@@ -13,7 +13,6 @@ from django.utils.six.moves.urllib.parse import urlparse, urlunparse
 
 
 class WrapperNotApplicable(ValueError):
-
     def __init__(self, *args, **kwargs):
         self.data = kwargs.pop('data', None)
         self.renderer_context = kwargs.pop('renderer_context', None)
@@ -270,15 +269,18 @@ class JsonApiMixin(object):
         model = self.model_from_obj(view)
         resource_type = self.model_to_resource_type(model)
 
+        # DRF 3.x data['results'] is instance of ReturnList already
         try:
             from rest_framework.utils.serializer_helpers import ReturnList
-
-            results = ReturnList(
-                data["results"],
-                serializer=data.serializer.fields["results"],
-            )
         except ImportError:
             results = data["results"]
+        else:
+            results = (
+                data['results'] if isinstance(data['results'], ReturnList) else ReturnList(
+                    data["results"],
+                    serializer=data.serializer.fields["results"]
+                )
+            )
 
         # Use default wrapper for results
         wrapper = self.wrap_default(results, renderer_context)
